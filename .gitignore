@@ -1,0 +1,5 @@
+/nbproject/
+/nbproject/*
+/bin/temp/*.o
+/bin/ClassDB.a
+/bin/main
