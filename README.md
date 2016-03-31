@@ -10,4 +10,4 @@ Project is divided into subparts:
 
 Currently its in development mode.
 
-### 52 Days to go!!!
+### 47 Days to go!!!

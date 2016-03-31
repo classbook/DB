@@ -12,7 +12,7 @@ endef
 
 define compile
 $(strip $(call temp_object, $(1))): $(1) $(COMMON_HEADERS) $(call get_header, $(1))
-	gcc -c $(1) -o $(call temp_object, $(1)) $(INCLUDE)
+	gcc -g -c $(1) -o $(call temp_object, $(1)) $(INCLUDE)
 endef
 
 
@@ -39,7 +39,7 @@ SLICE_FILES_TEMP := $(foreach file, $(SLICE_FILES), $(call temp_object, $(file))
 ###############################################################################
 
 bin/main: main.c bin/ClassDB.a Makefile
-	gcc main.c bin/ClassDB.a -o $@ $(INCLUDE)
+	gcc -g main.c bin/ClassDB.a -o $@ $(INCLUDE)
 	@echo Done Compiling.
 
 bin/ClassDB.a: $(SLICE_FILES_TEMP)
