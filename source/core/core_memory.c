@@ -55,7 +55,10 @@ void memory_init()
 	ansi_info("\rOK >> Memory Module.\n");
 }
 
-
+/**
+ * Creates an memory instance in memory module.
+ * @returns created memory instance identifier.
+ */
 int memory_create()
 {
 	if (instance_start==-1){
@@ -81,6 +84,10 @@ int memory_create()
 	return freeinstance;
 }
 
+/**
+ * Deletes memory instance with id `instance_index`
+ * @param instance_index : Id of instance that needs to be deleted.
+ */
 void memory_delete(int instance_index)
 {
 	assert(instance_index>=0 && instance_index<MEMORY_N_INSTANCES);
@@ -94,7 +101,13 @@ void memory_delete(int instance_index)
 }
 
 
-
+/**
+ * Appends data of length len to memory instance.
+ * @param mem_index: Memory instance id.
+ * @param data: Character array that needs to be appended.
+ * @param len: Length of string that needs to be appended.
+ * @returns Amount of data appended.
+ */
 int memory_appendmem(int mem_index, char *data, int len)
 {
 	assert(mem_index>=0 && mem_index<MEMORY_N_INSTANCES);
@@ -116,6 +129,12 @@ int memory_appendmem(int mem_index, char *data, int len)
 	return len;
 }
 
+/**
+ * Append string to memory instance.
+ * @param mem_index: Memory instance identifier.
+ * @param data: String that needs to be appended.
+ * @returns amount of length appended.
+ */
 int memory_appendstr(int mem_index, char *data)
 {
 	assert(mem_index>=0 && mem_index<MEMORY_N_INSTANCES);
@@ -137,7 +156,12 @@ int memory_appendstr(int mem_index, char *data)
 	return 1;
 }
 
-
+/**
+ * Initializes getting memory from memory instance in a procedural way.
+ * @param mem_index: Memory instance identifier.
+ * @returns reference to memory instance which could be used for further
+ * retrieval.
+ */
 memory_get_t memory_init_get(int mem_index)
 {
 	assert(mem_index>=0 && mem_index<MEMORY_N_INSTANCES);
@@ -152,22 +176,89 @@ memory_get_t memory_init_get(int mem_index)
 	return mg;
 }
 
+/**
+ * Get more data from memory instance referenced by `mg`.
+ * @param mg: Reference to memory instance.
+ */
 void memory_get(memory_get_t *mg)
 {
 	assert(mg!=NULL);
 	assert(mg->_memory!=NULL);
 
 	mg->_memory = mg->_memory->next;
-	if (mg->_memory==NULL)
+	if (mg->_memory==NULL){
+		mg->data = NULL;
+		mg->index=-1;
+		mg->len=0;
 		return;
+	}
 	mg->data = mg->_memory->data;
 	mg->index = mg->_memory->sindex;
 	mg->len = mg->_memory->filled;
 }
 
+/**
+ * Get memory reference to memory instance at index `index`.
+ * @param memory_index: Memory instance identifier.
+ * @param index: Index of memory instance where the reference is needed.
+ * @return memory instance reference.
+ */
+memory_get_t memory_get_index(int memory_index, int index)
+{
+	memory_get_t mg;
+	mg = memory_init_get(memory_index);
+	int i=0;
+	while (1)
+	{
+		if (mg._memory==NULL)
+		{
+			return mg;
+		}
+		if ((i+mg.len)>index)
+		{
+			mg.index = index%MEMORY_UNIT_MAXSIZE;
+			return mg;
+		}
+		i+=mg.len;
+		memory_get(&mg);
+	}
+	return mg;
+}
+
+/**
+ * Copies data in memory instance to memory buffer `mem`.
+ * @param mem_index: Memory instance identifier.
+ * @param index: Index from which the copy should occur.
+ * @param len: Length of data to be copied.
+ * @param mem: Memory buffer to which data needs to be copied.
+ * @returns Amount of data copied.
+ */
+int memory_copy(int mem_index, int index, int len, char *mem)
+{
+	int i=0;
+	memory_get_t mg = memory_get_index(mem_index, index);
+	for(i=0; i<len; i++)
+	{
+		if (mg.index==mg.len){
+			memory_get(&mg);
+			if (mg._memory==NULL){
+				mem[i]='\0';
+				return i+1;
+			}
+		}
+		mem[i] = *(mg.data+mg.index);
+		mg.index++;
+	}
+	mem[i]='\0';
+	return i;
+}
+
+/**
+ * Prints memory stored in instance.
+ * @param mem_index: Memory instance identifier.
+ */
 void memory_print(int mem_index)
 {
-	memory_t *unit = instances[mem_index].start;
 	memory_get_t mg = memory_init_get(mem_index);
 	for (; mg._memory!=NULL; memory_get(&mg))
 	{
