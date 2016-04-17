@@ -4,9 +4,6 @@
  * @date March 20, 2016, 12:59 PM 
  */
 
-#include "common/headers/stdheaders.h"
-
-
 #ifndef UNIQUE_CORE_DEFINITIONS_IDENTIFIER
 	#define UNIQUE_CORE_DEFINITIONS_IDENTIFIER
 
@@ -89,7 +86,7 @@
 	#define ansi_sinfo(...)\
 		{\
 			ansi_clear_line();\
-			ansi_fg_bg_text(C_MAGENTA, C_DEFAULT, __VA_ARGS__);\
+			ansi_fg_bg_text(C_CYAN, C_DEFAULT, __VA_ARGS__);\
 		}
 
 	#define ansi_info(...)\
@@ -111,31 +108,16 @@
 	 * REQUEST CONTROLLER MODULE 
 	 * =========================
 	 */
-	typedef struct request_struct{
-		int fd;
-		int mem_index;	// Implementation dependent
-		int data;
-		int isempty;
-		int _next;
-	}request_t;
 	
-	typedef struct request_get_struct{
-		int req_id;
-		int fd;
-		int data;
-		int mem_index;
-		uint32_t events;
-	}request_get_t;
-	
-	#define REQUEST_MAXREQUESTS 1000
+	#define REQUEST_MAXREQUESTS 10000
 
 	/**
 	 * ========================
 	 *      MEMORY MODULE
 	 * ========================
 	 */
-	#define MEMORY_UNIT_MAXSIZE 256
-	#define MEMORY_N_UNITS 1000
+	#define MEMORY_UNIT_MAXSIZE 1024
+	#define MEMORY_N_UNITS 1024*100
 	#define MEMORY_N_INSTANCES REQUEST_MAXREQUESTS
 
 	typedef struct memory_struct{
@@ -146,7 +128,7 @@
 	}memory_t;
 	
 	
-	typedef struct memory_instance_struct{
+	typedef struct{
 		memory_t *start;
 		memory_t *end;
 		int free;
@@ -161,4 +143,41 @@
 		int len;
 		char *data;
 	}memory_get_t;
+	
+	typedef struct{
+		int index;
+		int *len;
+		char *data;
+		struct memory_struct *_memory;
+	}memory_pointer_t;
+	
+	
+	/**
+	 * ======================
+	 *      REGEX MODULE
+	 * ======================
+	 */
+	
+	enum regex_error{
+		REGEX_PARSE_ERROR,
+		REGEX_PARSE_SUCCESS,
+		REGEX_STRING_MAY_EXTEND,
+		REGEX_STRING_UNDERFLOW,
+		REGEX_STRING_OVERFLOWN
+	};
+	
+	typedef struct{
+		int str_parsed;
+		int regex_parsed;
+		enum regex_error status;
+		int n_caps;
+		struct{
+			memory_get_t mg;
+		}cont;
+	}regex_status_t;
+	
+	typedef struct{
+		int index;
+		int len;
+	}regex_cap_t;
 #endif

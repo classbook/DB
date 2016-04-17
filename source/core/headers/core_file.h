@@ -4,7 +4,7 @@
  * @date March 25, 2016, 11:14 PM 
  */
 
-#include "init.h"
+#include "common/headers/init.h"
 
 void* file_map(char *file);
 int file_create(char *file, int prealloc_memory);

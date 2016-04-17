@@ -4,7 +4,8 @@
  * @date June 25, 2015, 12:01 PM 
  */
 
-#include "init.h"
+#include "common/headers/init.h"
+
 inline int epoll_add(int epfd, int fd, char *interest, int data);
 inline int epoll_modify(int epfd, int fd, int data, char *interest);
 inline int epoll_remove(int epfd, int fd);

@@ -4,7 +4,7 @@
  * @date March 19, 2016, 11:35 PM 
  */
 
-#include "init.h"
+#include "common/headers/init.h"
 
 void ansi_fg_bg(int fg, int bg);
 void ansi_default();
