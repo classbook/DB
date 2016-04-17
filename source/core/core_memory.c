@@ -176,6 +176,50 @@ memory_get_t memory_init_get(int mem_index)
 	return mg;
 }
 
+memory_pointer_t memory_pointer_start(int mem_index)
+{
+	memory_get_t mg = memory_init_get(mem_index);
+	memory_pointer_t pointer;
+	pointer._memory = mg._memory;
+	pointer.data = mg._memory->data;
+	pointer.index = mg._memory->sindex;
+	pointer.len = &mg._memory->filled;
+	return pointer;
+}
+
+memory_pointer_t memory_pointer_next(memory_pointer_t pointer)
+{
+	assert(pointer._memory!=NULL);
+	if (pointer._memory->next==NULL)
+	{
+		pointer._memory = NULL;
+		pointer.data = NULL;
+		pointer.index = -1;
+		pointer.len = NULL;
+		return pointer;
+	}
+	pointer._memory = pointer._memory->next;
+	pointer.data = pointer._memory->data;
+	pointer.index = pointer._memory->sindex;
+	pointer.len = &pointer._memory->filled;
+	return pointer;
+}
+
+memory_pointer_t memory_pointer_end(int mem_index)
+{
+	assert(mem_index>=0 && mem_index<MEMORY_N_INSTANCES);
+	assert(!instances[mem_index].free);
+
+	memory_t *mem = instances[mem_index].end;
+	
+	memory_pointer_t pointer;
+	pointer._memory = mem;
+	pointer.data = mem->data;
+	pointer.index = mem->sindex;
+	pointer.len = &mem->filled;
+	return pointer;
+}
+
 /**
  * Get more data from memory instance referenced by `mg`.
  * @param mg: Reference to memory instance.
@@ -195,6 +239,21 @@ void memory_get(memory_get_t *mg)
 	mg->data = mg->_memory->data;
 	mg->index = mg->_memory->sindex;
 	mg->len = mg->_memory->filled;
+}
+
+memory_get_t memory_get_end(int mem_index)
+{
+	assert(mem_index>=0 && mem_index<MEMORY_N_INSTANCES);
+	assert(!instances[mem_index].free);
+
+	memory_get_t mg;
+	mg._memory = instances[mem_index].start;
+	mg.index = mg._memory->filled;
+	mg.len = mg._memory->filled;
+	mg.data = mg._memory->data;
+	
+	return mg;
+
 }
 
 /**
@@ -257,17 +316,35 @@ int memory_copy(int mem_index, int index, int len, char *mem)
  * Prints memory stored in instance.
  * @param mem_index: Memory instance identifier.
  */
-void memory_print(int mem_index)
+void memory_printAll(int mem_index)
 {
-	memory_get_t mg = memory_init_get(mem_index);
-	for (; mg._memory!=NULL; memory_get(&mg))
+	memory_print(mem_index, 0, -1);
+}
+
+
+/**
+ * Prints memory stored in instance of length len starting from `index`.
+ * @param mem_index: Memory instance identifier.
+ * @param index: Index from which printing should start.
+ * @param len: Length of data that should be printed. -1 if upto end should
+ * be printed.
+ */
+void memory_print(int mem_index, int index, int len)
+{
+	memory_get_t mg = memory_get_index(mem_index, index);
+	if (mg._memory==NULL)
+		ansi_error("NO CONTENT.\n");
+	int i;
+	for (i=0; (i<len) || (len==-1); i++)
 	{
-		int i;
-		for (i=mg.index;i<mg.len; i++){
-			printf("%c", mg.data[i]);
+		if (mg.index==mg.len)
+		{
+			memory_get(&mg);
+			if (mg._memory==NULL)
+				break;
 		}
+		printf("%c", mg.data[mg.index++]);
 	}
-	printf("\n");
 }
 
 
